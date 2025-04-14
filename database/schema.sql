@@ -4,3 +4,11 @@ CREATE TABLE users (
   name VARCHAR(100),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE football_data (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  player_id VARCHAR(100) FOREIGN KEY REFERENCES users(id),
+  data JSON,
+  created_at TIMESTAMP,
+);
+

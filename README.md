@@ -55,7 +55,7 @@ SmartSoccer is a digital health app that leverages **Apple Watch** sensor data t
 | Backend Core | **Java** (Spring Boot / REST services)   |
 | Database     | **MySQL**                                |
 | Wearable     | **Apple Watch** (HealthKit, CoreMotion)  |
-| LLM API      | OpenAI GPT / Local model (TBD)           |
+| LLM API      | DeepSeek / OpenAI GPT                    |
 | Visualization| D3.js / React Native Charts              |
 
 ---
