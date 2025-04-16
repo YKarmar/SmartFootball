@@ -1,4 +1,4 @@
-package com.smartsoccer.model;
+package com.smartfootball.entity;
 
 import lombok.Data;
 import javax.persistence.*;

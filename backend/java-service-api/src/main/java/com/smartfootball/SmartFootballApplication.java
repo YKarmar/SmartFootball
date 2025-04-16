@@ -1,11 +1,11 @@
-package com.smartsoccer;
+package com.smartfootball;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SmartSoccerApplication {
+public class SmartFootballApplication {
     public static void main(String[] args) {
-        SpringApplication.run(SmartSoccerApplication.class, args);
+        SpringApplication.run(SmartFootballApplication.class, args);
     }
 } 
