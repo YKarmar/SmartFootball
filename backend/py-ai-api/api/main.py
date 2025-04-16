@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 import json
 
-app = FastAPI(title="SmartSoccer AI API")
+app = FastAPI(title="SmartFootball AI API")
 
 # 配置CORS
 app.add_middleware(

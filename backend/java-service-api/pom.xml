@@ -63,6 +63,7 @@
     </dependencies>
 
     <build>
+        <directory>${project.basedir}/java-service-api/target</directory>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

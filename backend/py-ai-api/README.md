@@ -1,6 +1,6 @@
-# SmartSoccer AI 后端
+# SmartFootball AI 后端
 
-这是SmartSoccer应用的AI后端服务，提供活动检测、场地估计、热力图生成和智能对话等功能。
+这是SmartFootball应用的AI后端服务，提供活动检测、场地估计、热力图生成和智能对话等功能。
 
 ## 功能特点
 
