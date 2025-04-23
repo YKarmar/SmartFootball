@@ -4,19 +4,19 @@ CREATE DATABASE IF NOT EXISTS smart_football CHARACTER SET utf8mb4 COLLATE utf8m
 USE smart_football;
 
 -- 用户表
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
     id VARCHAR(36) PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    full_name VARCHAR(100),
-    age INT,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(255),
+    age INTEGER,
     height FLOAT,
     weight FLOAT,
-    position VARCHAR(50),
-    skill_level VARCHAR(20),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    position VARCHAR(255),
+    skill_level VARCHAR(255),
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
 );
 
 -- 训练数据表

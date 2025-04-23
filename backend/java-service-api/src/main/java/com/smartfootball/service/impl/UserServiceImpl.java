@@ -2,8 +2,8 @@ package com.smartfootball.service.impl;
 
 import com.smartfootball.entity.User;
 import com.smartfootball.repository.UserRepository;
+import com.smartfootball.repository.Jbdc.UserJdbcRepository;
 import com.smartfootball.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,57 +12,103 @@ import java.util.Optional;
 
 @Service
 @Transactional
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl
+    implements UserService {
 
-    private final UserRepository userRepository;
+    private final UserRepository repo;
+    private final UserJdbcRepository jdbcRepo;
 
-    @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserServiceImpl(
+        UserRepository repo,
+        UserJdbcRepository jdbcRepo
+    ) {
+        this.repo    = repo;
+        this.jdbcRepo = jdbcRepo;
     }
 
     @Override
     public User createUser(User user) {
-        return userRepository.save(user);
-    }
-
-    @Override
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
-    }
-
-    @Override
-    public Optional<User> getUserByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    @Override
-    public Optional<User> getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+        if (repo.existsByUsername(
+              user.getUsername()
+            )) {
+            throw new IllegalArgumentException(
+              "Username already exists"
+            );
+        }
+        if (repo.existsByEmail(
+              user.getEmail()
+            )) {
+            throw new IllegalArgumentException(
+              "Email already exists"
+            );
+        }
+        return jdbcRepo.createUser(user);
     }
 
     @Override
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        return repo.findAll();
     }
 
     @Override
-    public User updateUser(User user) {
-        return userRepository.save(user);
+    public Optional<User> getUserById(
+        String id
+    ) {
+        return repo.findById(id);
     }
 
     @Override
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+    public Optional<User> getUserByUsername(
+        String username
+    ) {
+        return repo.findByUsername(username);
     }
 
     @Override
-    public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
+    public Optional<User> getUserByEmail(
+        String email
+    ) {
+        return repo.findByEmail(email);
     }
 
     @Override
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
+    public User updateUser(
+        String id,
+        User user
+    ) {
+        if (!repo.existsById(id)) {
+            throw new RuntimeException(
+              "The user does not exist"
+            );
+        }
+        return jdbcRepo.updateUser(id, user);
     }
-} 
+
+    @Override
+    public void deleteUser(
+        String id
+    ) {
+        if (!repo.existsById(id)) {
+            throw new RuntimeException(
+              "User does not exist and cannot be deleted"
+            );
+        }
+        repo.deleteById(id);
+    }
+
+    @Override
+    public boolean existsByUsername(
+        String username
+    ) {
+        return repo.existsByUsername(
+          username
+        );
+    }
+
+    @Override
+    public boolean existsByEmail(
+        String email
+    ) {
+        return repo.existsByEmail(email);
+    }
+}
