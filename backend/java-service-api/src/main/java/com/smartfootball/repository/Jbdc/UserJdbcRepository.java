@@ -1,10 +1,12 @@
 package com.smartfootball.repository.Jbdc;
 
 import com.smartfootball.entity.User;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.lang.NonNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -97,7 +99,7 @@ public class UserJdbcRepository {
 
     private static class UserRowMapper implements RowMapper<User> {
         @Override
-        public User mapRow(ResultSet rs,
+        public User mapRow(@NonNull ResultSet rs,
                            int rowNum) throws SQLException {
             User u = new User();
             u.setId(rs.getString("id"));

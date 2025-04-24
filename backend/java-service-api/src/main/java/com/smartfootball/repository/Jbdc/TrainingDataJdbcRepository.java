@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.lang.NonNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -94,7 +95,7 @@ public class TrainingDataJdbcRepository {
             new RowMapper<TrainingData>() {
                 @Override
                 public TrainingData mapRow(
-                    ResultSet rs,
+                    @NonNull ResultSet rs,
                     int rowNum
                 ) throws SQLException {
                     TrainingData d = new TrainingData();
@@ -142,7 +143,7 @@ public class TrainingDataJdbcRepository {
                 new RowMapper<TrainingData>() {
                     @Override
                     public TrainingData mapRow(
-                        ResultSet rs,
+                        @NonNull ResultSet rs,
                         int rowNum
                     ) throws SQLException {
                         TrainingData d = new TrainingData();

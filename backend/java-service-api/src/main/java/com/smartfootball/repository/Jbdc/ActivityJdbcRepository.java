@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.lang.NonNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -125,7 +126,7 @@ public class ActivityJdbcRepository {
      */
     private static class ActivityRowMapper implements RowMapper<Activity> {
         @Override
-        public Activity mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Activity mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             Activity a = new Activity();
             a.setId(rs.getString("id"));
             a.setUserId(rs.getString("user_id"));
