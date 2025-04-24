@@ -133,7 +133,7 @@ public class RecommendationJdbcRepository {
             new RowMapper<Recommendation>() {
                 @Override
                 public Recommendation mapRow(
-                    ResultSet rs,
+                    @NonNull ResultSet rs,
                     int rowNum
                 ) throws SQLException {
                     Recommendation r = new Recommendation();
