@@ -4,6 +4,7 @@ import com.smartfootball.entity.User;
 import com.smartfootball.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -94,5 +95,15 @@ public class UserController {
         svc.deleteUser(id);
         return ResponseEntity.noContent()
                              .build();
+    }
+
+    @PostMapping("/{id}/avatar")
+    public ResponseEntity<User> uploadAvatar(
+        @PathVariable String id,
+        @RequestParam("avatar") MultipartFile file
+    ) throws java.io.IOException {
+        byte[] avatarBytes = file.getBytes();
+        User updated = svc.updateAvatar(id, avatarBytes);
+        return ResponseEntity.ok(updated);
     }
 }

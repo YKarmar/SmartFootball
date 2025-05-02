@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { createUser } from "@/lib/api"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -25,11 +26,21 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // This would normally connect to a registration API
-    console.log("Register with:", formData)
-
-    // Simulate successful registration
-    router.push("/profile/edit")
+    // 校验两次密码是否一致
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match")
+      return
+    }
+    try {
+      await createUser({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password
+      })
+      router.push("/profile/edit")
+    } catch (error: any) {
+      alert(error.message)
+    }
   }
 
   return (

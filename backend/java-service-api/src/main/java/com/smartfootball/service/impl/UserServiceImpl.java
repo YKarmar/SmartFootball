@@ -111,4 +111,15 @@ public class UserServiceImpl
     ) {
         return repo.existsByEmail(email);
     }
+
+    @Override
+    public User updateAvatar(String id, byte[] avatar) {
+        if (!repo.existsById(id)) {
+            throw new RuntimeException("User does not exist");
+        }
+        User user = repo.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setAvatar(avatar);
+        return jdbcRepo.updateUser(id, user);
+    }
 }

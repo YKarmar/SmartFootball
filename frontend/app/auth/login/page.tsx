@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { fetchUserByEmail } from "@/lib/api"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -23,11 +24,16 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // This would normally connect to an authentication API
-    console.log("Login with:", formData)
-
-    // Simulate successful login
-    router.push("/")
+    try {
+      const user = await fetchUserByEmail(formData.email)
+      if (user.password !== formData.password) {
+        alert("Email or password is incorrect")
+        return
+      }
+      router.push("/")
+    } catch (error: any) {
+      alert(error.message)
+    }
   }
 
   return (

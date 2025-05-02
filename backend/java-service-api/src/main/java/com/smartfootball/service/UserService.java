@@ -15,4 +15,5 @@ public interface UserService {
     void deleteUser(String id);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
+    User updateAvatar(String id, byte[] avatar);
 }

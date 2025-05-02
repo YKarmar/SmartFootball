@@ -43,6 +43,10 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Lob
+    @Column(name = "avatar", columnDefinition = "BLOB")
+    private byte[] avatar;
+
     // Getters
     public String getId() { return id; }
     public String getUsername() { return username; }
@@ -56,6 +60,7 @@ public class User {
     public String getSkillLevel() { return skillLevel; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public byte[] getAvatar() { return avatar; }
 
     // Setters
     public void setId(String id) { this.id = id; }
@@ -70,6 +75,7 @@ public class User {
     public void setSkillLevel(String skillLevel) { this.skillLevel = skillLevel; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public void setAvatar(byte[] avatar) { this.avatar = avatar; }
 
     @PrePersist
     protected void onCreate() {

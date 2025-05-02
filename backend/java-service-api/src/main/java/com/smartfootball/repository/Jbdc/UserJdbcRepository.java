@@ -30,8 +30,8 @@ public class UserJdbcRepository {
           "INSERT INTO users " +
           "(id, username, password, email, full_name, age, " +
           " height, weight, position, " +
-          " skill_level, created_at, updated_at) " +
-          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+          " skill_level, created_at, updated_at, avatar) " +
+          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         jdbc.update(sql,
           id,
@@ -45,7 +45,8 @@ public class UserJdbcRepository {
           user.getPosition(),
           user.getSkillLevel(),
           now,
-          now
+          now,
+          user.getAvatar()
         );
 
         user.setId(id);
@@ -60,7 +61,7 @@ public class UserJdbcRepository {
           "UPDATE users SET " +
           "username = ?, email = ?, full_name = ?, age = ?, " +
           "height = ?, weight = ?, position = ?, " +
-          "skill_level = ?, updated_at = ? " +
+          "skill_level = ?, updated_at = ?, avatar = ? " +
           "WHERE id = ?";
 
         jdbc.update(sql,
@@ -73,6 +74,7 @@ public class UserJdbcRepository {
           upd.getPosition(),
           upd.getSkillLevel(),
           now,
+          upd.getAvatar(),
           id
         );
 
@@ -132,6 +134,7 @@ public class UserJdbcRepository {
               rs.getTimestamp("updated_at")
                 .toLocalDateTime()
             );
+            u.setAvatar(rs.getBytes("avatar"));
             return u;
         }
     }
