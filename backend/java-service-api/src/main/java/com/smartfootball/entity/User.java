@@ -44,7 +44,7 @@ public class User {
     private LocalDateTime updatedAt;
 
     @Lob
-    @Column(name = "avatar", columnDefinition = "BLOB")
+    @Column(name = "avatar", columnDefinition = "MEDIUMBLOB")
     private byte[] avatar;
 
     // Getters

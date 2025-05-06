@@ -70,10 +70,20 @@ export default function EditProfilePage() {
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file)
-      setAvatarPreview(URL.createObjectURL(file))
+      // 检查文件大小 (例如，限制为 5MB)
+      const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSizeInBytes) {
+        alert(`File is too large. Maximum size is ${maxSizeInBytes / 1024 / 1024}MB.`);
+        e.target.value = ""; // 清空文件选择器的值
+        setSelectedFile(null);
+        // 可选: 将预览图重置为之前的头像或占位符
+        setAvatarPreview(formData.avatar ? `data:image/png;base64,${formData.avatar}` : "/placeholder.svg");
+        return;
+      }
+      setSelectedFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
     }
   }
 
