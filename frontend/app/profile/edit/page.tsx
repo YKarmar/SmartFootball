@@ -7,26 +7,59 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Separator } from "@/components/ui/separator"
 import { useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User, Upload } from "lucide-react"
+import { fetchUserById, updateUser, uploadUserAvatar } from "@/lib/api"
 
 export default function EditProfilePage() {
   const router = useRouter()
-  // Mock data - in a real app, this would come from a user context or API
   const [formData, setFormData] = useState({
-    username: "lionelmessi",
-    fullName: "Lionel Messi",
-    email: "lionel@example.com",
-    avatar: "/placeholder.svg?height=100&width=100",
-    age: "35",
-    height: "170",
-    weight: "72",
-    position: "Forward",
-    skillLevel: "Professional",
+    id: "",
+    username: "",
+    fullName: "",
+    email: "",
+    avatar: "",
+    age: "",
+    height: "",
+    weight: "",
+    position: "",
+    skillLevel: "",
   })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string>("/placeholder.svg")
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user")
+    if (storedUser) {
+      const { id } = JSON.parse(storedUser)
+      if (id) {
+        fetchUserById(id)
+          .then(user => {
+            setFormData({
+              id: user.id || "",
+              username: user.username || "",
+              fullName: user.fullName || "",
+              email: user.email || "",
+              avatar: user.avatar || "",
+              age: user.age?.toString() || "",
+              height: user.height?.toString() || "",
+              weight: user.weight?.toString() || "",
+              position: user.position || "",
+              skillLevel: user.skillLevel || "",
+            })
+            if (user.avatar) {
+              setAvatarPreview(`data:image/png;base64,${user.avatar}`)
+            } else {
+              setAvatarPreview("/placeholder.svg")
+            }
+          })
+          .catch(console.error)
+      }
+    }
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -36,14 +69,57 @@ export default function EditProfilePage() {
     setFormData({ ...formData, [name]: value })
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      setAvatarPreview(URL.createObjectURL(file))
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // This would normally connect to a profile update API
-    console.log("Update profile with:", formData)
+    if (!formData.id) {
+      alert("User ID is missing. Cannot update profile.")
+      return
+    }
 
-    // Redirect to profile page
-    router.push("/profile")
-  }
+    let currentAvatarBase64 = formData.avatar;
+
+    try {
+      if (selectedFile) {
+        const updatedUserFromAvatar = await uploadUserAvatar(formData.id, selectedFile)
+        currentAvatarBase64 = updatedUserFromAvatar.avatar;
+        setFormData(prev => ({...prev, avatar: currentAvatarBase64 }));
+        if (currentAvatarBase64) {
+           setAvatarPreview(`data:image/png;base64,${currentAvatarBase64}`);
+        } else {
+           setAvatarPreview("/placeholder.svg");
+        }
+        setSelectedFile(null);
+      }
+
+      const profileDataToUpdate = {
+        username: formData.username,
+        fullName: formData.fullName,
+        email: formData.email,
+        age: formData.age ? parseInt(formData.age) : null,
+        height: formData.height ? parseFloat(formData.height) : null,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        position: formData.position,
+        skillLevel: formData.skillLevel,
+        avatar: currentAvatarBase64,
+      };
+
+      const updatedUser = await updateUser(formData.id, profileDataToUpdate);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      router.push("/profile");
+
+    } catch (error: any) {
+      console.error("Failed to update profile or upload avatar:", error);
+      alert(`Error: ${error.message || "Could not update profile."}`);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -61,7 +137,7 @@ export default function EditProfilePage() {
           <CardContent className="space-y-6">
             <div className="flex flex-col space-y-2 items-center sm:items-start sm:flex-row sm:space-y-0 sm:space-x-4">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={formData.avatar || "/placeholder.svg"} alt={formData.fullName} />
+                <AvatarImage src={avatarPreview} alt={formData.fullName} />
                 <AvatarFallback>
                   <User className="h-12 w-12" />
                 </AvatarFallback>
@@ -70,13 +146,11 @@ export default function EditProfilePage() {
                 <h3 className="font-medium">Profile Picture</h3>
                 <p className="text-sm text-muted-foreground">Upload a new profile picture. JPEG or PNG, max 2MB.</p>
                 <div className="flex items-center space-x-2">
-                  <Button type="button" variant="outline" size="sm">
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload
-                  </Button>
-                  <Button type="button" variant="outline" size="sm">
-                    Remove
-                  </Button>
+                  <input type="file" accept="image/jpeg, image/png" onChange={handleFileChange} id="avatarFile" className="hidden" />
+                  <label htmlFor="avatarFile" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 cursor-pointer">
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload
+                  </label>
                 </div>
               </div>
             </div>
@@ -96,7 +170,7 @@ export default function EditProfilePage() {
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} />
+                <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} readOnly />
               </div>
 
               <div className="space-y-2">

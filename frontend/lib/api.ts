@@ -51,13 +51,31 @@ export async function deleteUser(id: string) {
   return res.json();
 }
 
-export async function uploadAvatar(id: string, avatar: any) {
+// export async function uploadAvatar(id: string, avatar: any) {
+//   const res = await fetch(`http://localhost:8080/api/users/${id}/avatar`, {
+//     method: 'POST',
+//     body: avatar
+//   });
+//   if (!res.ok) throw new Error('Network request failed');
+//   return res.json();
+// }
+
+export async function uploadUserAvatar(id: string, avatarFile: File) {
+  const formData = new FormData();
+  formData.append('avatar', avatarFile);
+
   const res = await fetch(`http://localhost:8080/api/users/${id}/avatar`, {
     method: 'POST',
-    body: avatar
+    body: formData,
+    // Note: 'Content-Type': 'multipart/form-data' is usually set automatically by browsers when using FormData
   });
-  if (!res.ok) throw new Error('Network request failed');
-  return res.json();
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ message: 'Avatar upload failed and could not parse error response' }));
+    console.error('Avatar upload error response:', errorData);
+    throw new Error(errorData.message || 'Avatar upload failed');
+  }
+  return res.json(); // Expects backend to return the updated User object with new avatar Base64
 }
 
 // TrainingData API
@@ -236,3 +254,5 @@ export async function deleteActivity(id: string) {
   if (!res.ok) throw new Error('Network request failed');
   return res.json();
 }
+
+

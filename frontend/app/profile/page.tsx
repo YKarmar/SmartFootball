@@ -1,34 +1,26 @@
+"use client"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { User, Edit, Award } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { fetchUserById } from "@/lib/api"
 
 export default function ProfilePage() {
-  // Mock data - in a real app, this would come from a user context or API
-  const user = {
-    id: "1",
-    username: "lionelmessi",
-    fullName: "Lionel Messi",
-    email: "lionel@example.com",
-    avatar: "/placeholder.svg?height=100&width=100",
-    age: 35,
-    height: 170,
-    weight: 72,
-    position: "Forward",
-    skillLevel: "Professional",
-    stats: {
-      trainingSessions: 156,
-      totalDistance: 842,
-      averageHeartRate: 142,
-      maxSpeed: 32,
-    },
-    badges: [
-      { name: "Marathon Runner", description: "Ran over 500km total" },
-      { name: "Sprint King", description: "Reached top speed of 30km/h" },
-      { name: "Regular Trainer", description: "Completed 100+ sessions" },
-    ],
-  }
+  const [user, setUser] = useState<any>(null)
+  useEffect(() => {
+    const stored = localStorage.getItem("user")
+    if (stored) {
+      const { id } = JSON.parse(stored)
+      fetchUserById(id).then(data => setUser(data)).catch(console.error)
+    }
+  }, [])
+  if (!user) return <div>Loading...</div>
+  // 头像 BLOB 转换为 base64
+  const avatarSrc = user.avatar
+    ? `data:image/png;base64,${user.avatar}`
+    : "/placeholder.svg"
 
   return (
     <div className="space-y-6">
@@ -50,7 +42,7 @@ export default function ProfilePage() {
           <CardContent className="text-center">
             <div className="flex flex-col items-center space-y-4">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.fullName} />
+                <AvatarImage src={avatarSrc} alt={user.fullName} />
                 <AvatarFallback>
                   <User className="h-12 w-12" />
                 </AvatarFallback>
@@ -94,26 +86,26 @@ export default function ProfilePage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-lg bg-background p-4 shadow-sm border">
                 <div className="text-muted-foreground text-sm">Training Sessions</div>
-                <div className="text-3xl font-bold">{user.stats.trainingSessions}</div>
+                <div className="text-3xl font-bold">{user.stats?.trainingSessions ?? 0}</div>
               </div>
               <div className="rounded-lg bg-background p-4 shadow-sm border">
                 <div className="text-muted-foreground text-sm">Total Distance</div>
-                <div className="text-3xl font-bold">{user.stats.totalDistance} km</div>
+                <div className="text-3xl font-bold">{user.stats?.totalDistance ?? 0} km</div>
               </div>
               <div className="rounded-lg bg-background p-4 shadow-sm border">
                 <div className="text-muted-foreground text-sm">Avg. Heart Rate</div>
-                <div className="text-3xl font-bold">{user.stats.averageHeartRate} bpm</div>
+                <div className="text-3xl font-bold">{user.stats?.averageHeartRate ?? 0} bpm</div>
               </div>
               <div className="rounded-lg bg-background p-4 shadow-sm border">
                 <div className="text-muted-foreground text-sm">Max Speed</div>
-                <div className="text-3xl font-bold">{user.stats.maxSpeed} km/h</div>
+                <div className="text-3xl font-bold">{user.stats?.maxSpeed ?? 0} km/h</div>
               </div>
             </div>
 
             <div className="mt-6">
               <h3 className="font-medium mb-4">Achievements</h3>
               <div className="space-y-3">
-                {user.badges.map((badge, index) => (
+                {(user.badges ?? []).map((badge: any, index: number) => (
                   <div key={index} className="flex items-center gap-3 rounded-lg bg-background p-3 shadow-sm border">
                     <Award className="h-8 w-8 text-yellow-500" />
                     <div>

@@ -30,6 +30,7 @@ export default function LoginPage() {
         alert("Email or password is incorrect")
         return
       }
+      localStorage.setItem("user", JSON.stringify(user))
       router.push("/")
     } catch (error: any) {
       alert(error.message)
