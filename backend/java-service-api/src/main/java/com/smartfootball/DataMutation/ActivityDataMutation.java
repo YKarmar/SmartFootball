@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.lang.NonNull;
 
 @Service
 @Transactional
@@ -121,7 +122,7 @@ public class ActivityDataMutation {
      */
     private static class ActivityRowMapper implements RowMapper<Activity> {
         @Override
-        public Activity mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Activity mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             Activity activity = new Activity();
             activity.setId(rs.getString("id"));
             activity.setUserId(rs.getString("user_id"));                            // <-- 映射 user_id
