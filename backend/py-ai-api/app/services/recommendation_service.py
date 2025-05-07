@@ -9,7 +9,7 @@ BASE_URL = "http://java-backend:8080/api/recommendations"
 logger = logging.getLogger(__name__)
 
 async def create_recommendation(payload: RecommendationCreate) -> RecommendationOut:
-    data = payload.dict(by_alias=True)
+    data = payload.Dict(by_alias=True)
     logger.debug("Calling Java API CREATE_RECOMMENDATION POST %s with payload: %s",
                  BASE_URL, data)
 

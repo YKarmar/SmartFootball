@@ -17,19 +17,26 @@ public class Recommendation {
     @Column(name = "recommendation_type", nullable = false)
     private String recommendationType;
 
-    @Column(name = "title", nullable = false)
+    // This will store the concise summary from the LLM
+    @Column(name = "title", nullable = false, length = 500) // Increased length for summary
     private String title;
 
+    // This will store the detailed analysis from the first LLM
+    @Lob // Use @Lob for potentially long text, maps to TEXT or similar
     @Column(name = "description", nullable = false)
     private String description;
 
     @Column(name = "priority", nullable = false)
-    private int priority = 0;  // 设置默认值
+    private int priority = 1;  // Default to Medium (0=Low, 1=Medium, 2=High)
 
     @Column(name = "status", nullable = false)
-    private String status = "pending";  // 设置默认值
+    private String status = "pending";
 
-    @Column(name = "created_at")
+    @Lob // For potentially long user queries
+    @Column(name = "original_query") // New column
+    private String originalQuery;
+
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt; 
 
     @Column(name = "updated_at")
@@ -46,6 +53,7 @@ public class Recommendation {
     public String getDescription() { return description; }
     public int getPriority() { return priority; }
     public String getStatus() { return status; }
+    public String getOriginalQuery() { return originalQuery; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
@@ -56,12 +64,14 @@ public class Recommendation {
     public void setDescription(String description) { this.description = description; }
     public void setPriority(int priority) { this.priority = priority; }
     public void setStatus(String status) { this.status = status; }
+    public void setOriginalQuery(String originalQuery) { this.originalQuery = originalQuery; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate

@@ -31,8 +31,8 @@ public class RecommendationJdbcRepository {
         String sql =
             "INSERT INTO recommendations " +
             "(id, user_id, recommendation_type, title, " +
-            "description, priority, status, created_at, " +
-            "updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            "description, original_query, priority, status, created_at, " +
+            "updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         jdbc.update(
             sql,
@@ -41,6 +41,7 @@ public class RecommendationJdbcRepository {
             r.getRecommendationType(),
             r.getTitle(),
             r.getDescription(),
+            r.getOriginalQuery(),
             r.getPriority(),
             r.getStatus(),
             now,
@@ -110,6 +111,7 @@ public class RecommendationJdbcRepository {
                     r.setDescription(
                         rs.getString("description")
                     );
+                    r.setOriginalQuery(rs.getString("original_query"));
                     r.setPriority(rs.getInt("priority"));
                     r.setStatus(rs.getString("status"));
                     r.setCreatedAt(
@@ -146,6 +148,7 @@ public class RecommendationJdbcRepository {
                     r.setDescription(
                         rs.getString("description")
                     );
+                    r.setOriginalQuery(rs.getString("original_query"));
                     r.setPriority(rs.getInt("priority"));
                     r.setStatus(rs.getString("status"));
                     r.setCreatedAt(
