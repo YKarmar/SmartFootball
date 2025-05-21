@@ -255,4 +255,38 @@ export async function deleteActivity(id: string) {
   return res.json();
 }
 
+// Chat API
+// 定义聊天输入接口
+interface ChatInput {
+  userId: string;
+  query: string;
+}
+
+export async function Chat(data: ChatInput) {
+  const res = await fetch('http://localhost:8080/api/llm/basic-chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Network request failed');
+  return res.json();
+}
+
+export async function Summarize(data: ChatInput) {
+  // 首先获取详细分析的推荐ID
+  const analysisResponse = await Chat(data);
+  
+  if (!analysisResponse || !analysisResponse.id) {
+    throw new Error('Failed to get analysis recommendation ID');
+  }
+  
+  // 然后调用总结API
+  const res = await fetch(`http://localhost:8080/api/llm/summarize/${analysisResponse.id}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) throw new Error('Network request failed');
+  return res.json();
+}
+
 

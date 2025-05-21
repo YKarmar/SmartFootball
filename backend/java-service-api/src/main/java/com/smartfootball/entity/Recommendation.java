@@ -30,7 +30,7 @@ public class Recommendation {
     private int priority = 1;  // Default to Medium (0=Low, 1=Medium, 2=High)
 
     @Column(name = "status", nullable = false)
-    private String status = "pending";
+    private String status = "new";  // Default status is 'new' to match frontend
 
     @Lob // For potentially long user queries
     @Column(name = "original_query") // New column

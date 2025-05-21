@@ -80,7 +80,7 @@ public class LLMIntegrationServiceImpl implements LLMIntegrationService {
         recommendation.setDescription(detailedAnalysis);
         recommendation.setOriginalQuery(userQuery);
         recommendation.setPriority(1); // Default to Medium, to be updated by summarizer
-        recommendation.setStatus("PENDING_SUMMARY"); // New status
+        recommendation.setStatus("new"); // Changed to lowercase 'new' to match frontend
 
         Recommendation savedRecommendation = recommendationService.createRecommendation(recommendation);
         logger.info("Saved detailed analysis recommendation with ID: {} for userId: {}", savedRecommendation.getId(), userId);
@@ -119,7 +119,7 @@ public class LLMIntegrationServiceImpl implements LLMIntegrationService {
         existingRecommendation.setTitle(summary);
         existingRecommendation.setPriority(PRIORITY_MAP.getOrDefault(priorityStr.trim(), 1)); // Default to Medium if unknown, trim space
         existingRecommendation.setRecommendationType("SUMMARIZED_ANALYSIS"); // Update type
-        existingRecommendation.setStatus("COMPLETED"); // Update status
+        existingRecommendation.setStatus("in-progress"); // Changed to lowercase 'completed' to match frontend
         // updatedAt will be set by @PreUpdate
 
         Recommendation updatedRecommendation = recommendationService.updateRecommendation(existingRecommendation);

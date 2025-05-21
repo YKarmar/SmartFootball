@@ -22,7 +22,23 @@ app.include_router(api_llm_chat.router, prefix="/api/chat", tags=["LLM Chat"],)
 app.include_router(api_llm_summarize.router, prefix="/api/summarize", tags=["LLM Summarize & Prioritize"],)
 
 
+def print_all_routes():
+    """打印所有可用的API路由"""
+    print("\n=== SmartFootball Python API Routes ===")
+    routes = []
+    for route in app.routes:
+        if hasattr(route, "methods") and route.path != "/openapi.json":
+            for method in route.methods:
+                routes.append(f"{method:7} {route.path}")
+    
+    # 按路径排序并打印
+    for route in sorted(routes):
+        print(route)
+    print("=====================================\n")
+
+
 if __name__ == "__main__":
+    print_all_routes()  # 启动时打印所有路由
     uvicorn.run(
         "app.main:app",
         host=settings.HOST,

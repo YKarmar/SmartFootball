@@ -37,7 +37,7 @@ public class LLMController {
         this.llmIntegrationService = llmIntegrationService;
     }
 
-    @PostMapping("/analyze-data")
+    @PostMapping("/basic-chat")
     public ResponseEntity<Recommendation> analyzeUserData(@RequestBody LLMQueryRequest request) {
         if (request.getUserId() == null || request.getUserId().isEmpty() || 
             request.getQuery() == null || request.getQuery().isEmpty()) {

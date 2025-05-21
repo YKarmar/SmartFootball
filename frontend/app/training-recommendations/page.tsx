@@ -4,99 +4,188 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Activity, CheckCircle, XCircle, Flag, AlertTriangle, Settings } from "lucide-react"
-import { useState } from "react"
+import { Activity, CheckCircle, XCircle, Flag, AlertTriangle, Settings, RefreshCcw, ChevronDown, ChevronUp } from "lucide-react"
+import { useState, useEffect } from "react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { fetchRecommendationByUserId, updateRecommendation } from "@/lib/api"
+import { useToast } from "@/components/ui/use-toast"
+import { Summarize } from "@/lib/api"
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 // Define recommendation type
 type Recommendation = {
   id: string
-  category: string
+  recommendationType: string
   title: string
   description: string
-  priority: "high" | "medium" | "low"
-  status: "new" | "in-progress" | "completed" | "ignored"
+  priority: number
+  status: string
   createdAt: string
+  userId: string
 }
 
-export default function TrainingRecommendationsPage() {
-  // Mock recommendations data
-  const initialRecommendations: Recommendation[] = [
-    {
-      id: "rec1",
-      category: "Endurance",
-      title: "Increase aerobic capacity",
-      description:
-        "You've shown decreased performance in the later stages of training. Focus on improving your aerobic endurance with longer running sessions at 70% of your max heart rate.",
-      priority: "high",
-      status: "new",
-      createdAt: "2023-09-15",
-    },
-    {
-      id: "rec2",
-      category: "Speed",
-      title: "Add sprint recovery training",
-      description:
-        "Your sprint recovery time is longer than recommended. Add interval training with 30-second sprints followed by 60-second active recovery periods.",
-      priority: "high",
-      status: "in-progress",
-      createdAt: "2023-09-10",
-    },
-    {
-      id: "rec3",
-      category: "Positioning",
-      title: "Improve field coverage",
-      description:
-        "Heatmap analysis shows limited coverage on the left side of the field. Incorporate more movement drills focusing on cross-field transitions.",
-      priority: "medium",
-      status: "new",
-      createdAt: "2023-09-08",
-    },
-    {
-      id: "rec4",
-      category: "Recovery",
-      title: "Optimize rest intervals",
-      description:
-        "Heart rate recovery is slower than expected. Consider adding more rest days between high-intensity sessions and focus on active recovery techniques.",
-      priority: "medium",
-      status: "new",
-      createdAt: "2023-09-05",
-    },
-    {
-      id: "rec5",
-      category: "Nutrition",
-      title: "Pre-training meal timing",
-      description:
-        "Based on your performance metrics, consider adjusting your pre-training meal to 2-3 hours before activity to optimize energy levels.",
-      priority: "low",
-      status: "new",
-      createdAt: "2023-09-01",
-    },
-    {
-      id: "rec6",
-      category: "Technique",
-      title: "Improve acceleration mechanics",
-      description:
-        "Sensor data shows inefficient acceleration patterns. Focus on explosive first-step exercises and proper running form drills.",
-      priority: "high",
-      status: "completed",
-      createdAt: "2023-08-25",
-    },
-    {
-      id: "rec7",
-      category: "Strength",
-      title: "Add lower body strength training",
-      description:
-        "Power metrics suggest room for improvement in lower body strength. Incorporate squats, lunges, and plyometric exercises twice per week.",
-      priority: "medium",
-      status: "ignored",
-      createdAt: "2023-08-20",
-    },
-  ]
+// 样式组件，用于自定义Markdown渲染
+const markdownStyles = {
+  p: "mb-2",
+  h1: "text-xl font-bold mb-2",
+  h2: "text-lg font-bold mb-2",
+  h3: "text-base font-bold mb-2",
+  h4: "text-sm font-bold mb-2",
+  h5: "text-xs font-bold mb-1",
+  h6: "text-xs font-bold mb-1",
+  strong: "font-bold",
+  em: "italic",
+  ol: "list-decimal pl-6 mb-2",
+  ul: "list-disc pl-6 mb-2",
+  li: "mb-1",
+  code: "bg-gray-100 px-1 py-0.5 rounded text-sm",
+  pre: "bg-gray-100 p-3 rounded overflow-x-auto mb-2",
+  table: "border-collapse border border-gray-300 my-2",
+  th: "border border-gray-300 px-2 py-1 bg-gray-100",
+  td: "border border-gray-300 px-2 py-1",
+  a: "text-blue-600 underline hover:text-blue-800"
+};
 
-  const [recommendations, setRecommendations] = useState<Recommendation[]>(initialRecommendations)
+export default function TrainingRecommendationsPage() {
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([])
   const [activeTab, setActiveTab] = useState("all")
+  const [isLoading, setIsLoading] = useState(false)
+  const [userId, setUserId] = useState<string>('')
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
+  const { toast } = useToast()
+
+  // 清理Markdown标记的函数
+  const cleanMarkdown = (text: string) => {
+    return text
+      // 移除标题标记 (### 等)
+      .replace(/^#+\s+/gm, '')
+      // 移除粗体标记 (**text**)
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      // 移除斜体标记 (*text*)
+      .replace(/\*(.*?)\*/g, '$1')
+      // 移除代码块
+      .replace(/```[\s\S]*?```/g, '')
+      // 移除行内代码
+      .replace(/`([^`]+)`/g, '$1')
+      // 移除列表标记
+      .replace(/^[\s-]*[-*+]\s+/gm, '')
+      .replace(/^\s*\d+\.\s+/gm, '')
+      // 移除链接，只保留文本
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      // 移除多余空行
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  };
+
+  // 切换详情展开/收缩状态
+  const toggleExpand = (id: string) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }))
+  }
+
+  useEffect(() => {
+    // Get user ID from local storage
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+    } else {
+      // If not found, use default ID
+      setUserId('d2693663-51a3-4de0-9198-5f9c1241ed8b');
+    }
+  }, [])
+
+  // 处理recommendationType，移除DETAILED_ANALYSIS、LLM_ANALYSIS等标签
+  const formatRecommendationType = (type: string) => {
+    if (!type) return "";
+    
+    // 移除特定标签
+    const tagsToRemove = ["DETAILED_ANALYSIS", "LLM_ANALYSIS", "ANALYSIS"];
+    let formattedType = type;
+    
+    tagsToRemove.forEach(tag => {
+      formattedType = formattedType.replace(tag, "").trim();
+    });
+    
+    // 处理多余的空格和分隔符
+    formattedType = formattedType.replace(/\s+/g, " ").trim();
+    formattedType = formattedType.replace(/^[_\-,;:\s]+|[_\-,;:\s]+$/g, "");
+    
+    return formattedType || "General";
+  };
+
+  // Fetch recommendation data
+  const fetchRecommendations = async () => {
+    if (!userId) return;
+    
+    setIsLoading(true);
+    try {
+      const data = await fetchRecommendationByUserId(userId);
+      // Ensure status values are lowercase to match frontend expectations
+      const normalizedData = data.map((rec: Recommendation) => ({
+        ...rec,
+        status: rec.status?.toLowerCase() || "new",
+        // 确保recommendationType被格式化
+        recommendationType: formatRecommendationType(rec.recommendationType)
+      }));
+      setRecommendations(normalizedData);
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+      toast({
+        title: 'Failed to fetch recommendations',
+        description: 'Please try again later',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Get AI summary and add to recommendation list
+  const getAISummary = async () => {
+    if (!userId) return;
+    
+    setIsLoading(true);
+    try {
+      toast({
+        title: 'Generating AI summary',
+        description: 'This may take a moment, please wait...',
+      });
+      
+      // Call Summarize API
+      await Summarize({
+        userId: userId,
+        query: "Please summarize my training data and give me recommendations"
+      });
+      
+      // Get updated recommendation list
+      await fetchRecommendations();
+      
+      toast({
+        title: 'AI summary created successfully',
+        description: 'New training recommendations have been added to the list',
+      });
+    } catch (error) {
+      console.error('Error getting AI summary:', error);
+      toast({
+        title: 'Failed to get AI summary',
+        description: 'Please try again later',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch recommendations when page loads
+  useEffect(() => {
+    if (userId) {
+      fetchRecommendations();
+    }
+  }, [userId]);
 
   // Filter recommendations based on active tab
   const filteredRecommendations = recommendations.filter((rec) => {
@@ -108,41 +197,63 @@ export default function TrainingRecommendationsPage() {
   })
 
   // Update recommendation status
-  const updateStatus = (id: string, status: Recommendation["status"]) => {
-    setRecommendations((prev) => prev.map((rec) => (rec.id === id ? { ...rec, status } : rec)))
-  }
-
-  // Update recommendation priority
-  const updatePriority = (id: string, priority: Recommendation["priority"]) => {
-    setRecommendations((prev) => prev.map((rec) => (rec.id === id ? { ...rec, priority } : rec)))
+  const updateStatus = async (id: string, status: string) => {
+    try {
+      const rec = recommendations.find(r => r.id === id);
+      if (!rec) return;
+      
+      const updatedRec = { ...rec, status };
+      await updateRecommendation(id, updatedRec);
+      
+      // Update local state
+      setRecommendations(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+      
+      toast({
+        title: 'Status updated',
+        description: `Recommendation marked as ${status}`,
+      });
+    } catch (error) {
+      console.error('Error updating recommendation:', error);
+      toast({
+        title: 'Failed to update status',
+        description: 'Please try again later',
+        variant: 'destructive',
+      });
+    }
   }
 
   // Helper for priority badge
-  const getPriorityBadge = (priority: Recommendation["priority"]) => {
+  const getPriorityBadge = (priority: number) => {
     switch (priority) {
-      case "high":
+      case 2:
         return (
           <Badge variant="outline" className="bg-red-100 text-red-800 hover:bg-red-100">
             High Priority
           </Badge>
         )
-      case "medium":
+      case 1:
         return (
           <Badge variant="outline" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
             Medium
           </Badge>
         )
-      case "low":
+      case 0:
         return (
           <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">
             Low
+          </Badge>
+        )
+      default:
+        return (
+          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+            Medium
           </Badge>
         )
     }
   }
 
   // Helper for status badge
-  const getStatusBadge = (status: Recommendation["status"]) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case "new":
         return (
@@ -168,6 +279,12 @@ export default function TrainingRecommendationsPage() {
             Ignored
           </Badge>
         )
+      default:
+        return (
+          <Badge variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+            New
+          </Badge>
+        )
     }
   }
 
@@ -178,17 +295,28 @@ export default function TrainingRecommendationsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Training Recommendations</h1>
           <p className="text-muted-foreground">Personalized suggestions based on your performance data</p>
         </div>
-        <Select defaultValue="newest">
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="newest">Newest First</SelectItem>
-            <SelectItem value="oldest">Oldest First</SelectItem>
-            <SelectItem value="priority">Priority (High-Low)</SelectItem>
-            <SelectItem value="category">Category</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={getAISummary} 
+            disabled={isLoading}
+            className="flex items-center gap-2"
+          >
+            <RefreshCcw className="h-4 w-4" />
+            Get AI Training Summary
+          </Button>
+          <Select defaultValue="newest">
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest First</SelectItem>
+              <SelectItem value="oldest">Oldest First</SelectItem>
+              <SelectItem value="priority">Priority (High-Low)</SelectItem>
+              <SelectItem value="category">Category</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -205,28 +333,31 @@ export default function TrainingRecommendationsPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value={activeTab} className="space-y-4 pt-4">
-          {filteredRecommendations.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-10">
-                <Activity className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium">No recommendations found</h3>
-                <p className="text-muted-foreground mt-2 text-center max-w-md">
-                  {activeTab === "all"
-                    ? "No training recommendations are available yet. Keep training to generate personalized suggestions."
-                    : `No ${activeTab} recommendations are available.`}
-                </p>
-              </CardContent>
-            </Card>
+        <TabsContent value={activeTab} className="space-y-4 mt-6">
+          {isLoading ? (
+            <div className="text-center py-10">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-800"></div>
+              <p className="mt-2">Loading...</p>
+            </div>
+          ) : filteredRecommendations.length === 0 ? (
+            <div className="text-center py-10">
+              <p>No recommendations found</p>
+              <Button 
+                variant="outline" 
+                onClick={getAISummary} 
+                className="mt-4"
+              >
+                Get AI Training Summary
+              </Button>
+            </div>
           ) : (
             filteredRecommendations.map((recommendation) => (
-              <Card key={recommendation.id} className={recommendation.status === "completed" ? "opacity-75" : ""}>
+              <Card key={recommendation.id} className="shadow-sm">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
                       <CardTitle>{recommendation.title}</CardTitle>
                       <div className="flex flex-wrap gap-2">
-                        <Badge variant="secondary">{recommendation.category}</Badge>
                         {getPriorityBadge(recommendation.priority)}
                         {getStatusBadge(recommendation.status)}
                       </div>
@@ -235,66 +366,91 @@ export default function TrainingRecommendationsPage() {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
                           <Settings className="h-4 w-4" />
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">Settings</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => updatePriority(recommendation.id, "high")}
-                          disabled={recommendation.priority === "high"}
-                        >
-                          <Flag className="mr-2 h-4 w-4 text-red-500" />
-                          Set High Priority
+                        <DropdownMenuItem onClick={() => updateStatus(recommendation.id, "new")}>
+                          <Flag className="mr-2 h-4 w-4" />
+                          <span>Mark as New</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => updatePriority(recommendation.id, "medium")}
-                          disabled={recommendation.priority === "medium"}
-                        >
-                          <Flag className="mr-2 h-4 w-4 text-yellow-500" />
-                          Set Medium Priority
+                        <DropdownMenuItem onClick={() => updateStatus(recommendation.id, "in-progress")}>
+                          <Activity className="mr-2 h-4 w-4" />
+                          <span>Mark as In Progress</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => updatePriority(recommendation.id, "low")}
-                          disabled={recommendation.priority === "low"}
-                        >
-                          <Flag className="mr-2 h-4 w-4 text-green-500" />
-                          Set Low Priority
+                        <DropdownMenuItem onClick={() => updateStatus(recommendation.id, "completed")}>
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          <span>Mark as Completed</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => updateStatus(recommendation.id, "ignored")}>
+                          <XCircle className="mr-2 h-4 w-4" />
+                          <span>Mark as Ignored</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">{recommendation.description}</p>
-                </CardContent>
-                <CardFooter className="flex justify-between pt-0">
-                  <p className="text-xs text-muted-foreground">
-                    Added on {new Date(recommendation.createdAt).toLocaleDateString()}
-                  </p>
-                  <div className="flex gap-2">
-                    {recommendation.status !== "completed" && (
-                      <Button size="sm" variant="outline" onClick={() => updateStatus(recommendation.id, "completed")}>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Mark Completed
-                      </Button>
-                    )}
-                    {recommendation.status !== "ignored" && (
-                      <Button size="sm" variant="outline" onClick={() => updateStatus(recommendation.id, "ignored")}>
-                        <XCircle className="mr-2 h-4 w-4" />
-                        Ignore
-                      </Button>
-                    )}
-                    {(recommendation.status === "completed" || recommendation.status === "ignored") && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateStatus(recommendation.id, "in-progress")}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm font-medium">
+                        {expandedItems[recommendation.id] ? 'Hide details' : 'Show details'}
+                      </p>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0"
+                        onClick={() => toggleExpand(recommendation.id)}
                       >
-                        <AlertTriangle className="mr-2 h-4 w-4" />
-                        Reactivate
+                        {expandedItems[recommendation.id] ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
                       </Button>
+                    </div>
+                    
+                    {expandedItems[recommendation.id] ? (
+                      <div className="markdown-content mt-2">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            p: ({node, ...props}) => <p className={markdownStyles.p} {...props} />,
+                            h1: ({node, ...props}) => <h1 className={markdownStyles.h1} {...props} />,
+                            h2: ({node, ...props}) => <h2 className={markdownStyles.h2} {...props} />,
+                            h3: ({node, ...props}) => <h3 className={markdownStyles.h3} {...props} />,
+                            h4: ({node, ...props}) => <h4 className={markdownStyles.h4} {...props} />,
+                            h5: ({node, ...props}) => <h5 className={markdownStyles.h5} {...props} />,
+                            h6: ({node, ...props}) => <h6 className={markdownStyles.h6} {...props} />,
+                            strong: ({node, ...props}) => <strong className={markdownStyles.strong} {...props} />,
+                            em: ({node, ...props}) => <em className={markdownStyles.em} {...props} />,
+                            ol: ({node, ...props}) => <ol className={markdownStyles.ol} {...props} />,
+                            ul: ({node, ...props}) => <ul className={markdownStyles.ul} {...props} />,
+                            li: ({node, ...props}) => <li className={markdownStyles.li} {...props} />,
+                            code: ({inline, ...props}: {inline?: boolean} & React.HTMLProps<HTMLElement>) => 
+                              inline 
+                                ? <code className={markdownStyles.code} {...props} />
+                                : <pre className={markdownStyles.pre}><code {...props} /></pre>,
+                            a: ({node, ...props}) => <a className={markdownStyles.a} target="_blank" rel="noopener noreferrer" {...props} />,
+                          }}
+                        >
+                          {recommendation.description}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {cleanMarkdown(recommendation.description)}
+                      </p>
                     )}
                   </div>
+                </CardContent>
+                <CardFooter className="pt-1 text-xs text-muted-foreground">
+                  Created on{" "}
+                  {new Date(recommendation.createdAt).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
                 </CardFooter>
               </Card>
             ))
