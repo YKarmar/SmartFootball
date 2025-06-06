@@ -64,3 +64,35 @@ CREATE TABLE IF NOT EXISTS recommendations (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Apple Health data table
+CREATE TABLE IF NOT EXISTS apple_health_data (
+    id VARCHAR(36) PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    workout_type VARCHAR(50),
+    start_date DATETIME NOT NULL,
+    end_date DATETIME NOT NULL,
+    duration_seconds INT,
+    distance_meters DECIMAL(10,2),
+    total_energy_burned DECIMAL(8,2),
+    heart_rate_samples JSON,
+    location_samples JSON,
+    accelerometer_samples JSON,
+    gyroscope_samples JSON,
+    source_name VARCHAR(100),
+    source_version VARCHAR(50),
+    metadata JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    imported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_start_date (user_id, start_date),
+    INDEX idx_workout_type (workout_type),
+    INDEX idx_imported_at (imported_at)
+);
+
+-- Create indexes for better performance
+CREATE INDEX idx_training_data_user_session ON training_data(user_id, session_start);
+CREATE INDEX idx_activities_user_time ON activities(user_id, start_time);
+CREATE INDEX idx_recommendations_user_status ON recommendations(user_id, status);
+CREATE INDEX idx_recommendations_type ON recommendations(recommendation_type);
+CREATE INDEX idx_apple_health_user_date ON apple_health_data(user_id, start_date DESC);
+

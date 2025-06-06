@@ -273,19 +273,145 @@ export async function Chat(data: ChatInput) {
 }
 
 export async function Summarize(data: ChatInput) {
-  // 首先获取详细分析的推荐ID
-  const analysisResponse = await Chat(data);
-  
-  if (!analysisResponse || !analysisResponse.id) {
-    throw new Error('Failed to get analysis recommendation ID');
-  }
-  
-  // 然后调用总结API
-  const res = await fetch(`http://localhost:8080/api/llm/summarize/${analysisResponse.id}`, {
+  const res = await fetch(`http://localhost:8080/api/llm/summarize`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
   });
   if (!res.ok) throw new Error('Network request failed');
+  return res.json();
+}
+
+// Apple Health API
+export interface AppleHealthImportRequest {
+  userId: string;
+  workouts?: WorkoutData[];
+  heartRateData?: HealthSample[];
+  locationData?: LocationSample[];
+  accelerometerData?: MotionSample[];
+  gyroscopeData?: MotionSample[];
+  deviceInfo?: DeviceInfo;
+}
+
+export interface WorkoutData {
+  workoutType: string;
+  startDate: string;
+  endDate: string;
+  totalEnergyBurned?: number;
+  totalDistance?: number;
+  sourceName?: string;
+  sourceVersion?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface HealthSample {
+  date: string;
+  value: number;
+  unit: string;
+  sourceName?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface LocationSample {
+  timestamp: string;
+  latitude: number;
+  longitude: number;
+  altitude?: number;
+  horizontalAccuracy?: number;
+  verticalAccuracy?: number;
+  speed?: number;
+  course?: number;
+}
+
+export interface MotionSample {
+  timestamp: string;
+  x: number;
+  y: number;
+  z: number;
+  sensorType: 'accelerometer' | 'gyroscope';
+}
+
+export interface DeviceInfo {
+  name: string;
+  model: string;
+  systemName: string;
+  systemVersion: string;
+  appVersion: string;
+}
+
+export async function importAppleHealthData(request: AppleHealthImportRequest) {
+  const res = await fetch('http://localhost:8080/api/apple-health/import', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request)
+  });
+  if (!res.ok) throw new Error('Failed to import Apple Health data');
+  return res.json();
+}
+
+export async function checkHealthKitConnectionStatus(userId: string) {
+  const res = await fetch(`http://localhost:8080/api/apple-health/connection-status/${userId}`);
+  if (!res.ok) throw new Error('Failed to check HealthKit connection status');
+  return res.json();
+}
+
+export async function fetchAppleHealthData(userId: string) {
+  const res = await fetch(`http://localhost:8080/api/apple-health/data/${userId}`);
+  if (!res.ok) throw new Error('Failed to fetch Apple Health data');
+  return res.json();
+}
+
+export async function fetchRecentAppleHealthData(userId: string) {
+  const res = await fetch(`http://localhost:8080/api/apple-health/data/${userId}/recent`);
+  if (!res.ok) throw new Error('Failed to fetch recent Apple Health data');
+  return res.json();
+}
+
+export async function fetchAppleHealthDataInRange(userId: string, startDate: string, endDate: string) {
+  const res = await fetch(`http://localhost:8080/api/apple-health/data/${userId}/range?startDate=${startDate}&endDate=${endDate}`);
+  if (!res.ok) throw new Error('Failed to fetch Apple Health data in range');
+  return res.json();
+}
+
+export async function fetchAppleHealthDataByWorkoutType(userId: string, workoutType: string) {
+  const res = await fetch(`http://localhost:8080/api/apple-health/data/${userId}/workout-type/${workoutType}`);
+  if (!res.ok) throw new Error('Failed to fetch Apple Health data by workout type');
+  return res.json();
+}
+
+export async function fetchAppleHealthDataById(id: string) {
+  const res = await fetch(`http://localhost:8080/api/apple-health/data/details/${id}`);
+  if (!res.ok) throw new Error('Failed to fetch Apple Health data details');
+  return res.json();
+}
+
+export async function deleteAppleHealthData(id: string) {
+  const res = await fetch(`http://localhost:8080/api/apple-health/data/${id}`, {
+    method: 'DELETE'
+  });
+  if (!res.ok) throw new Error('Failed to delete Apple Health data');
+  return res.json();
+}
+
+export async function convertAppleHealthToTrainingData(healthDataId: string) {
+  const res = await fetch(`http://localhost:8080/api/apple-health/convert-to-training/${healthDataId}`, {
+    method: 'POST'
+  });
+  if (!res.ok) throw new Error('Failed to convert Apple Health data to training data');
+  return res.json();
+}
+
+export async function fetchAppleHealthStats(userId: string) {
+  const res = await fetch(`http://localhost:8080/api/apple-health/stats/${userId}`);
+  if (!res.ok) throw new Error('Failed to fetch Apple Health statistics');
+  return res.json();
+}
+
+export async function triggerHealthKitSync(userId: string) {
+  const res = await fetch(`http://localhost:8080/api/apple-health/sync/${userId}`, {
+    method: 'POST'
+  });
+  if (!res.ok) throw new Error('Failed to trigger HealthKit sync');
   return res.json();
 }
 

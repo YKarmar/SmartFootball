@@ -1,0 +1,184 @@
+{
+  "userId": "user123",
+  "workouts": [
+    {
+      "workoutType": "Football",
+      "startDate": "2023-12-01T14:00:00Z",
+      "endDate": "2023-12-01T15:30:00Z",
+      "totalEnergyBurned": 450.0,
+      "totalDistance": 5200.0,
+      "sourceName": "Apple Watch Series 9",
+      "sourceVersion": "10.1",
+      "metadata": {
+        "indoor": false,
+        "weather": "sunny",
+        "temperature": "22°C",
+        "field_type": "grass"
+      }
+    },
+    {
+      "workoutType": "Running",
+      "startDate": "2023-12-01T08:00:00Z",
+      "endDate": "2023-12-01T08:45:00Z",
+      "totalEnergyBurned": 320.0,
+      "totalDistance": 6500.0,
+      "sourceName": "Apple Watch Series 9",
+      "sourceVersion": "10.1",
+      "metadata": {
+        "indoor": false,
+        "pace": "6:30/km"
+      }
+    }
+  ],
+  "heartRateData": [
+    {
+      "date": "2023-12-01T14:15:00Z",
+      "value": 145.0,
+      "unit": "BPM",
+      "sourceName": "Apple Watch"
+    },
+    {
+      "date": "2023-12-01T14:30:00Z",
+      "value": 152.0,
+      "unit": "BPM",
+      "sourceName": "Apple Watch"
+    },
+    {
+      "date": "2023-12-01T14:45:00Z",
+      "value": 158.0,
+      "unit": "BPM",
+      "sourceName": "Apple Watch"
+    },
+    {
+      "date": "2023-12-01T15:00:00Z",
+      "value": 162.0,
+      "unit": "BPM",
+      "sourceName": "Apple Watch"
+    },
+    {
+      "date": "2023-12-01T15:15:00Z",
+      "value": 155.0,
+      "unit": "BPM",
+      "sourceName": "Apple Watch"
+    }
+  ],
+  "locationData": [
+    {
+      "timestamp": "2023-12-01T14:00:00Z",
+      "latitude": 40.7128,
+      "longitude": -74.0060,
+      "altitude": 10.0,
+      "horizontalAccuracy": 5.0,
+      "verticalAccuracy": 8.0,
+      "speed": 0.0,
+      "course": 0.0
+    },
+    {
+      "timestamp": "2023-12-01T14:15:00Z",
+      "latitude": 40.7130,
+      "longitude": -74.0058,
+      "altitude": 11.0,
+      "horizontalAccuracy": 4.0,
+      "verticalAccuracy": 7.0,
+      "speed": 12.5,
+      "course": 45.0
+    },
+    {
+      "timestamp": "2023-12-01T14:30:00Z",
+      "latitude": 40.7135,
+      "longitude": -74.0055,
+      "altitude": 12.0,
+      "horizontalAccuracy": 3.0,
+      "verticalAccuracy": 6.0,
+      "speed": 15.2,
+      "course": 90.0
+    },
+    {
+      "timestamp": "2023-12-01T14:45:00Z",
+      "latitude": 40.7140,
+      "longitude": -74.0052,
+      "altitude": 10.5,
+      "horizontalAccuracy": 4.0,
+      "verticalAccuracy": 7.0,
+      "speed": 18.3,
+      "course": 135.0
+    },
+    {
+      "timestamp": "2023-12-01T15:00:00Z",
+      "latitude": 40.7142,
+      "longitude": -74.0048,
+      "altitude": 9.0,
+      "horizontalAccuracy": 5.0,
+      "verticalAccuracy": 8.0,
+      "speed": 10.8,
+      "course": 180.0
+    }
+  ],
+  "accelerometerData": [
+    {
+      "timestamp": "2023-12-01T14:15:00Z",
+      "x": 0.2,
+      "y": -0.8,
+      "z": 0.1,
+      "sensorType": "accelerometer"
+    },
+    {
+      "timestamp": "2023-12-01T14:30:00Z",
+      "x": -0.3,
+      "y": 0.6,
+      "z": -0.2,
+      "sensorType": "accelerometer"
+    },
+    {
+      "timestamp": "2023-12-01T14:45:00Z",
+      "x": 0.5,
+      "y": -0.4,
+      "z": 0.3,
+      "sensorType": "accelerometer"
+    },
+    {
+      "timestamp": "2023-12-01T15:00:00Z",
+      "x": -0.1,
+      "y": 0.9,
+      "z": -0.4,
+      "sensorType": "accelerometer"
+    }
+  ],
+  "gyroscopeData": [
+    {
+      "timestamp": "2023-12-01T14:15:00Z",
+      "x": 0.1,
+      "y": 0.05,
+      "z": -0.02,
+      "sensorType": "gyroscope"
+    },
+    {
+      "timestamp": "2023-12-01T14:30:00Z",
+      "x": -0.08,
+      "y": 0.12,
+      "z": 0.03,
+      "sensorType": "gyroscope"
+    },
+    {
+      "timestamp": "2023-12-01T14:45:00Z",
+      "x": 0.15,
+      "y": -0.07,
+      "z": 0.04,
+      "sensorType": "gyroscope"
+    },
+    {
+      "timestamp": "2023-12-01T15:00:00Z",
+      "x": -0.03,
+      "y": 0.09,
+      "z": -0.01,
+      "sensorType": "gyroscope"
+    }
+  ],
+  "deviceInfo": {
+    "name": "Apple Watch Series 9",
+    "model": "Watch7,1",
+    "systemName": "watchOS",
+    "systemVersion": "10.1",
+    "appVersion": "1.0.0"
+  }
+} 
